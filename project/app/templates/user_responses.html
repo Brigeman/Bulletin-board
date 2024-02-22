@@ -1,0 +1,36 @@
+{% extends 'index.html' %}
+
+{% block content %}
+    <h1>Your Responses</h1>
+
+    <form method="GET" action="">
+        <label for="filter">Filter by:</label>
+        <select name="filter" id="filter">
+            <option value="all">All</option>
+            <option value="accepted">Accepted</option>
+            <option value="unaccepted">Unaccepted</option>
+        </select>
+        <button type="submit">Apply</button>
+    </form>
+
+    <ul>
+        {% for response in user_responses %}
+            <li>
+                <p>{{ response.text }}</p>
+                <p>Advertisement: {{ response.advertisement.title }}</p>
+                <p>Response from: {{ response.user.username }}</p>
+                <p>Created at: {{ response.created_at }}</p>
+                <form action="{% url 'accept_response' response.id %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit">Accept</button>
+                </form>
+                <form action="{% url 'delete_response' response.id %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit">Delete</button>
+                </form>
+            </li>
+        {% empty %}
+            <li>No responses yet.</li>
+        {% endfor %}
+    </ul>
+{% endblock %}

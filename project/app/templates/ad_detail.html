@@ -3,7 +3,11 @@
 {% block content %}
     <h1>{{ advertisement.title }}</h1>
     <p>{{ advertisement.text }}</p>
+    <p>Категория: {{ advertisement.get_category_display }}</p>
     {% if advertisement.image %}
         <img src="{{ advertisement.image.url }}" alt="Изображение объявления">
     {% endif %}
+
+    <!-- Ссылка на страницу отправки отклика -->
+    <a href="{% url 'send_response' ad_id=advertisement.id %}">Оставить отклик</a>
 {% endblock %}

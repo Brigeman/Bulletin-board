@@ -59,6 +59,7 @@
                 <li>
                     <h3>{{ advertisement.title }}</h3>
                     <p>{{ advertisement.text }}</p>
+                    <p>Категория: {{ advertisement.get_category_display }}</p>
                     <a href="{% url 'ad_detail' ad_id=advertisement.id %}">Детали</a>
                     {% if advertisement.image %}
                         <img src="{{ advertisement.image.url }}" alt="Изображение объявления">

@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_apscheduler',
     'app',
 ]
 
@@ -145,3 +146,10 @@ LOGIN_URL = '/login/'
 
 MEDIA_URL = '/media/'  # URL, по которому будут обслуживаться медиафайлы
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # Путь к каталогу медиафайлов на файловой системе
+
+# redis/celery
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'

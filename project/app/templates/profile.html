@@ -5,14 +5,26 @@
 {% block content %}
     <h1>Профиль пользователя</h1>
     <h2>Информация о пользователе:</h2>
-    <p>Имя: {{ user.first_name }}</p>
-    <p>Фамилия: {{ user.last_name }}</p>
-    <p>Email: {{ user.email }}</p>
-    <h2>Объявления пользователя:</h2>
-    <ul>
-        {% for ad in user.ads.all %}
-            <li>{{ ad.title }}</li>
+    <p>Имя: {{ user_profile.user.first_name }}</p>
+    <p>Фамилия: {{ user_profile.user.last_name }}</p>
+    <p>Email: {{ user_profile.user.email }}</p>
 
+    <h2>Объявления пользователя</h2>
+    <ul>
+        {% for advertisement in user_advertisements %}
+            <li>
+                <h3>{{ advertisement.title }}</h3>
+                <p>{{ advertisement.text }}</p>
+                <!-- Добавляем ссылку на детали объявления -->
+                <a href="{% url 'ad_detail' ad_id=advertisement.id %}">Детали</a>
+                <a href="{% url 'user_responses' %}">User Responses</a>
+                <!-- Добавляем ссылку на редактирование объявления (если пользователь владелец) -->
+                {% if user == advertisement.user %}
+                    <a href="{% url 'edit_ad' ad_id=advertisement.id %}">Редактировать</a>
+                    <a href="{% url 'delete_ad' ad_id=advertisement.id %}">Удалить</a>
+
+                {% endif %}
+            </li>
         {% endfor %}
     </ul>
 {% endblock %}

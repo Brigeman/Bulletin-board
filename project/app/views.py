@@ -3,9 +3,11 @@ from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
 from .models import UserProfile
-from .forms import AdvertisementForm, AdForm
+from .forms import AdvertisementForm, AdForm, ResponseForm
 from django.contrib.auth.decorators import login_required
-from .models import Advertisement
+from .models import Advertisement, Response, Notification
+from django.core.mail import send_mail
+from django.conf import settings
 
 
 def index(request):
@@ -42,24 +44,29 @@ def edit_ad(request, ad_id):
         return redirect('index')  # Или другая страница перенаправления
 
 
-
 def ad_detail(request, ad_id):
     advertisement = get_object_or_404(Advertisement, id=ad_id)
     return render(request, 'ad_detail.html', {'advertisement': advertisement})
 
 
+@login_required
+def delete_ad(request, ad_id):
+    ad = get_object_or_404(Advertisement, id=ad_id)
+    if request.user == ad.user:
+        ad.delete()
+        messages.success(request, 'Объявление успешно удалено.')
+    else:
+        messages.error(request, 'У вас нет прав на удаление этого объявления.')
+    return redirect('profile')
+
+
+@login_required
 def profile(request):
     # Получаем профиль пользователя или возвращаем 404, если не найден
     user_profile = get_object_or_404(UserProfile, user=request.user)
-    return render(request, 'profile.html', {'user_profile': user_profile})
-
-
-def responses(request):
-    return render(request, 'responses.html')
-
-
-def response_detail(request, response_id):
-    return render(request, 'response_detail.html', {'response_id': response_id})
+    # Получаем все объявления пользователя
+    user_advertisements = Advertisement.objects.filter(user=request.user)
+    return render(request, 'profile.html', {'user_profile': user_profile, 'user_advertisements': user_advertisements})
 
 
 from django.contrib.auth.forms import AuthenticationForm
@@ -148,4 +155,65 @@ def registration_confirmation(request, user_id):
         return render(request, 'registration_confirmation.html', {'user_id': user_id})
 
 
+@login_required
+def send_response(request, ad_id):
+    advertisement = get_object_or_404(Advertisement, id=ad_id)
+    if request.method == 'POST':
+        form = ResponseForm(request.POST)
+        if form.is_valid():
+            response = form.save(commit=False)
+            response.user = request.user
+            response.advertisement = advertisement
+            response.save()
 
+            # Отправляем уведомление на электронную почту владельцу объявления
+            subject = 'Новый отклик на ваше объявление'
+            message = f'Пользователь {request.user.username} оставил отклик на ваше объявление "{advertisement.title}": {response.text}'
+            from_email = settings.EMAIL_HOST_USER
+            to_email = [advertisement.user.email]
+            send_mail(subject, message, from_email, to_email, fail_silently=False)
+
+            return redirect('ad_detail', ad_id=ad_id)
+    else:
+        form = ResponseForm()
+    return render(request, 'send_response.html', {'form': form, 'advertisement': advertisement})
+
+
+@login_required
+def user_responses(request):
+    search_query = request.GET.get('search_query')
+    user_advertisements = Advertisement.objects.filter(user=request.user)
+
+    if search_query:
+        user_responses = Response.objects.filter(advertisement__in=user_advertisements, text__icontains=search_query)
+    else:
+        user_responses = Response.objects.filter(advertisement__in=user_advertisements)
+
+    return render(request, 'user_responses.html', {'user_responses': user_responses})
+
+
+def response_detail(request, response_id):
+    response = get_object_or_404(Response, id=response_id)
+    return render(request, 'response_detail.html', {'response': response})
+
+# Представление для принятия отклика
+@login_required
+def accept_response(request, response_id):
+    response = get_object_or_404(Response, id=response_id)
+    notification_text = "Ваш отклик был принят."
+
+    # Создание уведомления для пользователя, оставившего отклик
+    Notification.objects.create(user=response.user, text=notification_text)
+
+    # Другие действия по обработке принятого отклика
+    ...
+
+    return redirect('user_responses')
+
+# Представление для удаления отклика
+def delete_response(request, response_id):
+    response = get_object_or_404(Response, id=response_id)
+    if request.method == 'POST':
+        response.delete()
+        # После удаления перенаправляем пользователя на страницу с откликами
+        return redirect('user_responses')
