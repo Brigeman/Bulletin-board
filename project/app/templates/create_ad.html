@@ -1,0 +1,13 @@
+{% extends 'index.html' %}
+{% block title %}Создание объявления{% endblock %}
+{% block content %}
+    <h1>Создание нового объявления</h1>
+    <form method="post">
+        {% csrf_token %}
+        <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Создать объявление</button>
+        </form>
+    </form>
+{% endblock %}

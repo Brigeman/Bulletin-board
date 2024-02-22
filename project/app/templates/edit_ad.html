@@ -1,0 +1,14 @@
+{% extends 'index.html' %}
+{% block title %}Редактирование объявления{% endblock %}
+{% block content %}
+    <h1>Редактирование объявления</h1>
+    <!-- Форма редактирования объявления здесь -->
+    <form method="post">
+        {% csrf_token %}
+        <label for="title">Заголовок:</label><br>
+        <input type="text" id="title" name="title" value="{{ advertisement.title }}" required><br>
+        <label for="text">Текст объявления:</label><br>
+        <textarea id="text" name="text" rows="6" required>{{ advertisement.text }}</textarea><br>
+        <button type="submit">Сохранить изменения</button>
+    </form>
+{% endblock %}

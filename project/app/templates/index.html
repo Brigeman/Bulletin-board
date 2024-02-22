@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}My Site{% endblock %}</title>
+    <style>
+        /* Пример стилей для украшения навигационной панели */
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+        }
+        nav ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+        }
+        nav ul li {
+            display: inline;
+            margin-right: 10px;
+        }
+        nav ul li a {
+            color: #fff;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Bulletin Board</h1>
+        <!-- Верхняя часть страницы -->
+        <nav>
+            <ul>
+                {% if user.is_authenticated %}
+                    <li><a href="{% url 'index' %}">Главная</a></li>
+                    <li><a href="{% url 'create_ad' %}">Создать объявление</a></li>
+                    <li><a href="{% url 'profile' %}">Профиль</a></li>
+                    <li><a href="{% url 'logout' %}">Выход</a></li>
+                {% else %}
+                    <li><a href="{% url 'index' %}">Главная</a></li>
+                    <li><a href="{% url 'login' %}">Войти</a></li>
+                    <li><a href="{% url 'register' %}">Регистрация</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        {% block content %}
+        <!-- Здесь будет основное содержимое страницы -->
+        {% endblock %}
+
+        <!-- Отображение объявлений на главной странице -->
+        <section>
+        <h2>Последние объявления</h2>
+        <ul>
+            {% for advertisement in advertisements %}
+                <li>
+                    <h3>{{ advertisement.title }}</h3>
+                    <p>{{ advertisement.text }}</p>
+                    <a href="{% url 'ad_detail' ad_id=advertisement.id %}">Детали</a>
+                    {% if advertisement.image %}
+                        <img src="{{ advertisement.image.url }}" alt="Изображение объявления">
+                    {% endif %}
+                    {% if user.is_authenticated and advertisement.user == user %}
+                        <a href="{% url 'edit_ad' ad_id=advertisement.id %}">Изменить</a>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+        </section>
+    </main>
+
+    <footer>
+        <!-- Нижняя часть страницы -->
+    </footer>
+</body>
+</html>

@@ -1,0 +1,9 @@
+{% extends 'index.html' %}
+{% block title %}Детали объявления{% endblock %}
+{% block content %}
+    <h1>{{ advertisement.title }}</h1>
+    <p>{{ advertisement.text }}</p>
+    {% if advertisement.image %}
+        <img src="{{ advertisement.image.url }}" alt="Изображение объявления">
+    {% endif %}
+{% endblock %}
