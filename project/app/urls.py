@@ -1,5 +1,7 @@
 from django.urls import path
 from . import views
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('', views.index, name='index'),
@@ -18,3 +20,7 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout'),
     path('registration_confirmation/<int:user_id>/', views.registration_confirmation, name='registration_confirmation'),
 ]
+
+#маршруты URL для обслуживания медиафайлов только в режиме отладки
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

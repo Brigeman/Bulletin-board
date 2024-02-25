@@ -4,7 +4,6 @@ from django.utils import timezone
 from .models import Advertisement
 from django.core.mail import send_mail
 from celery import shared_task
-# from django.contrib.auth.models import User, Advertisement
 
 
 @shared_task

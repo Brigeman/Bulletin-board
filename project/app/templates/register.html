@@ -1,16 +1,15 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Регистрация</title>
-</head>
-<body>
+{% extends 'index.html' %}
+{% block title %}Registration{% endblock %}
+
+{% block content %}
     <h1>Регистрация нового пользователя</h1>
     <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Register</button>
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Регистрация</button>
     </form>
-</body>
-</html>
+{% endblock %}
+
+{% block show_category_filter %}
+    {# Не показывать фильтр категорий #}
+{% endblock %}

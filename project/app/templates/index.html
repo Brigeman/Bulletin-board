@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}My Site{% endblock %}</title>
+    <title>{% block title %}Bulletin Board{% endblock %}</title>
     <style>
         /* Пример стилей для украшения навигационной панели */
         header {
@@ -54,6 +54,23 @@
         <!-- Отображение объявлений на главной странице -->
         <section>
         <h2>Последние объявления</h2>
+            <form method="GET" action="">
+        <label for="filter">Отсортировать по:</label>
+        <select name="category_filter" id="category_filter">
+            <option value="">Все категории</option>
+            <option value="Танки">Танки</option>
+            <option value="Хилы">Хилы</option>
+            <option value="ДД">ДД (Дамаг-дилеры)</option>
+            <option value="Торговцы">Торговцы</option>
+            <option value="Гилдмастеры">Гилдмастеры</option>
+            <option value="Квестгиверы">Квестгиверы</option>
+            <option value="Кузнецы">Кузнецы</option>
+            <option value="Кожевники">Кожевники</option>
+            <option value="Зельевары">Зельевары</option>
+            <option value="Мастера заклинаний">Мастера заклинаний</option>
+        </select>
+        <button type="submit">Применить</button>
+    </form>
         <ul>
             {% for advertisement in advertisements %}
                 <li>
@@ -62,7 +79,7 @@
                     <p>Категория: {{ advertisement.get_category_display }}</p>
                     <a href="{% url 'ad_detail' ad_id=advertisement.id %}">Детали</a>
                     {% if advertisement.image %}
-                        <img src="{{ advertisement.image.url }}" alt="Изображение объявления">
+                        <img src="{{ advertisement.image.url }}" alt="Изображение объявления" style="max-width: 300px; height: auto;">
                     {% endif %}
                     {% if user.is_authenticated and advertisement.user == user %}
                         <a href="{% url 'edit_ad' ad_id=advertisement.id %}">Изменить</a>

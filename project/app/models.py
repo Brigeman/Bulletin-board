@@ -44,7 +44,8 @@ class Response(models.Model):
     advertisement = models.ForeignKey(Advertisement, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     text = models.TextField()
-    created_at = models.DateTimeField(default=timezone.now)  # Добавляем поле created_at
+    created_at = models.DateTimeField(default=timezone.now)
+    accepted = models.BooleanField(default=False)
 
     def __str__(self):
         return f'Response by {self.user.username} to {self.advertisement.title}'

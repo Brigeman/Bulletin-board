@@ -2,6 +2,8 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from .models import Response
+from .models import Advertisement
+
 
 class SignUpForm(UserCreationForm):
     email = forms.EmailField(max_length=254, help_text='Required. Inform a valid email address.')
@@ -12,9 +14,6 @@ class SignUpForm(UserCreationForm):
     class Meta:
         model = User
         fields = ('username', 'email', 'first_name', 'last_name', 'nickname', 'password1', 'password2')
-
-
-from .models import Advertisement
 
 
 class AdvertisementForm(forms.ModelForm):
@@ -49,4 +48,3 @@ class ResponseForm(forms.ModelForm):
     class Meta:
         model = Response
         fields = ['text']
-

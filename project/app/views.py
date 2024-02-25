@@ -6,13 +6,25 @@ from .models import UserProfile
 from .forms import AdvertisementForm, AdForm, ResponseForm
 from django.contrib.auth.decorators import login_required
 from .models import Advertisement, Response, Notification
+from django.http import HttpResponseNotAllowed
+from .forms import SignUpForm
 from django.core.mail import send_mail
 from django.conf import settings
+from django.contrib.auth.forms import AuthenticationForm
+import random
+import string
 
 
 def index(request):
     advertisements = Advertisement.objects.all()
+    # Получаем значение фильтра из параметра запроса
+    category_filter = request.GET.get('category_filter')
+
+    # Если указана категория для фильтрации, фильтруем объявления
+    if category_filter:
+        advertisements = advertisements.filter(category=category_filter)
     return render(request, 'index.html', {'advertisements': advertisements})
+
 
 @login_required
 def create_ad(request):
@@ -66,10 +78,22 @@ def profile(request):
     user_profile = get_object_or_404(UserProfile, user=request.user)
     # Получаем все объявления пользователя
     user_advertisements = Advertisement.objects.filter(user=request.user)
-    return render(request, 'profile.html', {'user_profile': user_profile, 'user_advertisements': user_advertisements})
 
+    # Получаем значение фильтра из параметра запроса
+    category_filter = request.GET.get('category_filter')
 
-from django.contrib.auth.forms import AuthenticationForm
+    # Если указана категория для фильтрации, фильтруем объявления пользователя
+    if category_filter:
+        user_advertisements = user_advertisements.filter(category=category_filter)
+
+    # Получаем отклики на объявления пользователя
+    user_responses = Response.objects.filter(advertisement__in=user_advertisements)
+
+    # Если указана категория для фильтрации откликов, фильтруем отклики
+    if category_filter:
+        user_responses = user_responses.filter(advertisement__category=category_filter)
+
+    return render(request, 'profile.html', {'user_profile': user_profile, 'user_advertisements': user_advertisements, 'user_responses': user_responses})
 
 
 def login_view(request):
@@ -96,9 +120,6 @@ def logout_view(request):
     return redirect('index')
 
 
-import random
-import string
-
 def generate_confirmation_code(length=6):
     """Генерация случайного одноразового кода указанной длины."""
     # Возможные символы для кода
@@ -107,9 +128,6 @@ def generate_confirmation_code(length=6):
     code = ''.join(random.choice(characters) for _ in range(length))
     return code
 
-from .forms import SignUpForm
-from django.core.mail import send_mail
-from django.conf import settings
 
 def register(request):
     if request.method == 'POST':
@@ -185,9 +203,9 @@ def user_responses(request):
     user_advertisements = Advertisement.objects.filter(user=request.user)
 
     if search_query:
-        user_responses = Response.objects.filter(advertisement__in=user_advertisements, text__icontains=search_query)
+        user_responses = Response.objects.filter(advertisement__in=user_advertisements, text__icontains=search_query, accepted=False)
     else:
-        user_responses = Response.objects.filter(advertisement__in=user_advertisements)
+        user_responses = Response.objects.filter(advertisement__in=user_advertisements, accepted=False)
 
     return render(request, 'user_responses.html', {'user_responses': user_responses})
 
@@ -196,24 +214,33 @@ def response_detail(request, response_id):
     response = get_object_or_404(Response, id=response_id)
     return render(request, 'response_detail.html', {'response': response})
 
-# Представление для принятия отклика
+
 @login_required
-def accept_response(request, response_id):
-    response = get_object_or_404(Response, id=response_id)
-    notification_text = "Ваш отклик был принят."
-
-    # Создание уведомления для пользователя, оставившего отклик
-    Notification.objects.create(user=response.user, text=notification_text)
-
-    # Другие действия по обработке принятого отклика
-    ...
-
-    return redirect('user_responses')
-
-# Представление для удаления отклика
 def delete_response(request, response_id):
     response = get_object_or_404(Response, id=response_id)
     if request.method == 'POST':
         response.delete()
-        # После удаления перенаправляем пользователя на страницу с откликами
-        return redirect('user_responses')
+        return redirect('user_responses')  # Перенаправляем пользователя на страницу с откликами
+    # Обработка случая, когда метод запроса не POST
+    return HttpResponseNotAllowed(['POST'])
+
+
+@login_required
+def accept_response(request, response_id):
+    response = get_object_or_404(Response, id=response_id)
+    if request.method == 'POST':
+        notification_text = "Ваш отклик был принят."
+        Notification.objects.create(user=response.user, text=notification_text)
+        response.accepted = True  # Помечаем отклик как принятый
+        response.save()
+
+        # Отправляем уведомление пользователю
+        subject = 'Ваш отклик был принят'
+        message = 'Ваш отклик на объявление "{}" был принят.'.format(response.advertisement.title)
+        from_email = settings.EMAIL_HOST_USER
+        to_email = [response.user.email]
+        send_mail(subject, message, from_email, to_email, fail_silently=False)
+
+        messages.success(request, 'Отклик успешно принят')
+        return redirect('user_responses')  # Перенаправляем пользователя на страницу с откликами
+    return HttpResponseNotAllowed(['POST'])

@@ -1,6 +1,6 @@
 {% extends 'index.html' %}
 
-{% block title %}Профиль пользователя{% endblock %}
+{% block title %}Profile{% endblock %}
 
 {% block content %}
     <h1>Профиль пользователя</h1>
@@ -15,16 +15,30 @@
             <li>
                 <h3>{{ advertisement.title }}</h3>
                 <p>{{ advertisement.text }}</p>
+                <p>Категория: {{ advertisement.get_category_display }}</p>
                 <!-- Добавляем ссылку на детали объявления -->
                 <a href="{% url 'ad_detail' ad_id=advertisement.id %}">Детали</a>
-                <a href="{% url 'user_responses' %}">User Responses</a>
                 <!-- Добавляем ссылку на редактирование объявления (если пользователь владелец) -->
                 {% if user == advertisement.user %}
+                    <a href="{% url 'user_responses' %}">Отклики</a>
                     <a href="{% url 'edit_ad' ad_id=advertisement.id %}">Редактировать</a>
                     <a href="{% url 'delete_ad' ad_id=advertisement.id %}">Удалить</a>
-
                 {% endif %}
             </li>
+        {% endfor %}
+    </ul>
+
+    <h2>Отклики пользователя на объявления</h2>
+    <ul>
+        {% for response in user_responses %}
+            <li>
+                <h3>Отклик на объявление: {{ response.advertisement.title }}</h3>
+                <p>Текст отклика: {{ response.text }}</p>
+                <p>Категория объявления: {{ response.advertisement.get_category_display }}</p>
+                <p>Дата создания отклика: {{ response.created_at }}</p>
+            </li>
+        {% empty %}
+            <li>Нет откликов пользователя на объявления.</li>
         {% endfor %}
     </ul>
 {% endblock %}
