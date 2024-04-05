@@ -1,8 +1,3 @@
-# Let's create the README.md file with the provided content
-
-readme_content = """
-# Bulletin_board
-
 ## About
 
 "Bulletin_board" is a dynamic classified ads platform that allows users to add, delete, and respond to ads with ease. After registration, users can manage their profiles, post ads, leave responses, and interact with others’ offers. A unique feature of our platform is the use of one-time passwords for registration, enhancing security and user experience.
